@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Player Concerns</title>
+
+<style>
+body{
+  font-family:Arial,sans-serif;
+  background:#071026;
+  color:#fff;
+  margin:0;
+  padding:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.container{
+  width:90%;
+  max-width:420px;
+  background:#0b162f;
+  padding:24px;
+  border-radius:12px;
+  box-shadow:0 0 12px #00c6ff;
+  text-align:center;
+}
+
+input, textarea{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #00c6ff;
+  background:#021222;
+  color:#fff;
+  font-size:16px;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  margin-top:12px;
+  background:#00c6ff;
+  color:#021;
+  border:0;
+  border-radius:8px;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#09e0ff;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h2>Player Concerns</h2>
+  <p>Please tell us your concern.</p>
+
+  <input id="name" placeholder="Name" />
+  <input id="surname" placeholder="Surname" />
+  <input id="cell" placeholder="Cell Number" />
+
+  <textarea id="description" rows="4" placeholder="Describe your concern..."></textarea>
+
+  <button id="submitBtn">Submit Concern</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBqJTLjxhZBCsvjrTH_cG0fkXlElG6BqTg",
+  authDomain: "tose-ccf8f.firebaseapp.com",
+  databaseURL: "https://tose-ccf8f-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "tose-ccf8f",
+  storageBucket: "tose-ccf8f.appspot.com",
+  messagingSenderId: "475447495901",
+  appId: "1:475447495901:web:9189276a162a3680afdf34"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const submitBtn = document.getElementById("submitBtn");
+
+submitBtn.onclick = () => {
+  const name = document.getElementById("name").value.trim();
+  const surname = document.getElementById("surname").value.trim();
+  const cell = document.getElementById("cell").value.trim();
+  const description = document.getElementById("description").value.trim();
+
+  if(!name || !surname || !cell || !description){
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  const concern = {
+    name,
+    surname,
+    cell,
+    description,
+    time: Date.now()
+  };
+
+  push(ref(db, "queries"), concern)
+  .then(() => {
+    alert("Your concern has been submitted. Thank you.");
+    document.getElementById("name").value="";
+    document.getElementById("surname").value="";
+    document.getElementById("cell").value="";
+    document.getElementById("description").value="";
+  })
+  .catch(err => alert("Error: " + err));
+};
+</script>
+</body>
+</html>
