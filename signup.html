@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <style>
+    body { margin:0; font-family: Arial; background-color: lightblue; color: white; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+    .signup-container { width: 350px; display:flex; flex-direction:column; gap:10px; }
+    h1 { text-align:center; font-size:14px; }
+    h2 { text-align:center; font-size:14px; margin-top:12px; }
+    input { width:100%; padding:8px; border-radius:4px; border:none; }
+    button { width:100%; padding:8px; background:green; color:white; border:none; cursor:pointer; font-weight:bold; margin-top:10px; }
+    small { font-size:8px; display:block; }
+  </style>
+</head>
+<body>
+  <div class="signup-container">
+    <h1>PERSONAL DETAILS</h1>
+    <input type="text" id="name" placeholder="Name">
+    <input type="text" id="surname" placeholder="Surname">
+    <input type="text" id="idNumber" placeholder="ID Number">
+    <input type="email" id="email" placeholder="Email Address">
+    <input type="text" id="nationality" placeholder="Nationality">
+    <input type="text" id="cell" placeholder="Cell Number">
+    <input type="text" id="homeAddress" placeholder="Home Address">
+    <input type="text" id="suburb" placeholder="Suburb">
+    <input type="text" id="city" placeholder="City">
+    <input type="text" id="zip" placeholder="Zip Code">
+
+    <h2>Security</h2>
+    <input type="password" id="password" placeholder="Password">
+    <small>Minimum 8 characters</small>
+    <input type="password" id="confirmPassword" placeholder="Confirm Password">
+    <small>Must match password</small>
+
+    <h2>BANK DETAILS</h2>
+    <input type="text" id="bankName" placeholder="Bank Name">
+    <input type="text" id="accountNumber" placeholder="Account Number">
+
+    <button id="submitBtn">SUBMIT</button>
+  </div>
+
+  <script type="module">
+    import { auth, db } from './firebase.js';
+    import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { ref, set, get } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.addEventListener('click', async () => {
+      const name = document.getElementById('name').value;
+      const surname = document.getElementById('surname').value;
+      const idNumber = document.getElementById('idNumber').value;
+      const email = document.getElementById('email').value.toLowerCase();
+      const nationality = document.getElementById('nationality').value;
+      const cell = document.getElementById('cell').value;
+      const homeAddress = document.getElementById('homeAddress').value;
+      const suburb = document.getElementById('suburb').value;
+      const city = document.getElementById('city').value;
+      const zip = document.getElementById('zip').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const bankName = document.getElementById('bankName').value;
+      const accountNumber = document.getElementById('accountNumber').value;
+
+      if(password.length < 8){ alert("Password must be at least 8 characters"); return; }
+      if(password !== confirmPassword){ alert("Passwords do not match"); return; }
+
+      // Prevent duplicate ID number
+      const snapshot = await get(ref(db, `users`));
+      const users = snapshot.val() || {};
+      const duplicate = Object.values(users).some(u => u.idNumber === idNumber);
+      if(duplicate){ alert("ID Number already exists"); return; }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
+        await set(ref(db, `users/${uid}`), {
+          name, surname, idNumber, email, nationality, cell, homeAddress, suburb, city, zip, bankName, accountNumber
+        });
+        alert("Sign up successful! Redirecting to login...");
+        window.location.href = './index.html';
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
